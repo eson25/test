@@ -2,11 +2,16 @@
 {% block content %}
 <nav class="navbar">
   <span class="logo">🔍 Pwned Checker</span>
+{% if current_user.is_authenticated %}
+  <span class="nav-user">Logged in as {{ current_user.email }}</span>
+  <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+{% else %}
   <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+{% endif %}
 </nav>
 
 <div class="hero">
-  <h1>Have I Been Pwned?</h1>
+  <h1>🔍 Pwned Checker</h1>
   <p>Check if your data has been compromised in a breach.</p>
 
   <div class="actions">

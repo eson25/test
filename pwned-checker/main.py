@@ -60,7 +60,7 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and bcrypt.check_password_hash(user.password, request.form['password']):
             login_user(user)
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('home'))
         flash("Invalid credentials", "danger")
     return render_template('login.html')
 
@@ -68,7 +68,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
