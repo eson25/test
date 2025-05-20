@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<nav class="navbar">
+  <span class="logo">🔍 Pwned Checker</span>
+  <a href="{{ url_for('login') }}" class="nav-link">Login</a>
+</nav>
+
+<div class="hero">
+  <h1>Have I Been Pwned?</h1>
+  <p>Check if your data has been compromised in a breach.</p>
+
+  <div class="actions">
+    <a href="{{ url_for('check_email') }}" class="button">📧 Check Email</a>
+    <a href="{{ url_for('check_password') }}" class="button">🔐 Check Password</a>
+  </div>
+</div>
+{% endblock %}

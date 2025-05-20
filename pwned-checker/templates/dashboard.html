@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Welcome {{ current_user.email }}</h2>
+<form method="POST">
+  <input name="email" placeholder="Enter email to check">
+  <button type="submit">Check</button>
+</form>
+
+{% if breaches %}
+  <h3>Breaches Found:</h3>
+  <ul>
+    {% for breach in breaches %}
+      <li><strong>{{ breach.Name }}</strong>: {{ breach.Description }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<a href="{{ url_for('logout') }}">Logout</a>
+{% endblock %}
