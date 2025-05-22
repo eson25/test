@@ -9,7 +9,6 @@ from collections import Counter
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-db = SQLAlchemy()
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -20,12 +19,6 @@ with app.app_context():
 
 API_KEY = "20e80cfdaea7408f9a04ecff835f233a"
 HIBP_URL = "https://haveibeenpwned.com/api/v3/breachedaccount/"
-
-# User model
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
 
 @login_manager.user_loader
 def load_user(user_id):
