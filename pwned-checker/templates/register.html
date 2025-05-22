@@ -1,10 +1,122 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Register</h2>
-<form method="POST">
-  <input name="email" placeholder="Email" required>
-  <input name="password" type="password" placeholder="Password" required>
-  <button type="submit">Register</button>
-</form>
-<p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
-{% endblock %}
+<!-- templates/register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register | Pwned Checker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .strength-bar {
+      height: 5px;
+    }
+    .weak { background-color: red; width: 33%; }
+    .medium { background-color: orange; width: 66%; }
+    .strong { background-color: green; width: 100%; }
+    #strengthText {
+      font-size: 0.9em;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+  <div class="text-center mb-4">
+    <h1 class="display-5">🧾 Register</h1>
+    <p class="text-muted">Create an account to start checking breaches.</p>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" class="card shadow p-4" id="registerForm">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email address</label>
+          <input 
+              type="email" 
+              class="form-control" 
+              id="email" 
+              name="email" 
+              required 
+              maxlength="150" 
+              oninput="sanitizeEmail()">
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input 
+              type="password" 
+              class="form-control" 
+              id="password" 
+              name="password" 
+              required 
+              maxlength="64">
+          <div class="form-text">
+            <input type="checkbox" onclick="togglePassword()"> Show password
+          </div>
+          <div class="strength-bar mt-2" id="strengthBar"></div>
+          <div id="strengthText" class="text-muted">Password must be at least 6 characters.</div>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Register</button>
+      </form>
+
+      <div class="text-center mt-3">
+        <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a>.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const password = document.getElementById("password");
+  const bar = document.getElementById("strengthBar");
+  const strengthText = document.getElementById("strengthText");
+
+  password.addEventListener("input", function () {
+    const val = password.value;
+    let strength = 0;
+    if (val.length >= 6) strength++;
+    if (val.match(/[A-Z]/)) strength++;
+    if (val.match(/[0-9]/)) strength++;
+    if (val.match(/[^A-Za-z0-9]/)) strength++;
+
+    bar.className = "strength-bar mt-2";
+    strengthText.className = "text-muted";
+
+    if (strength <= 1) {
+      bar.classList.add("weak");
+      strengthText.textContent = "Weak: Try using uppercase letters, numbers, and symbols.";
+      strengthText.classList.add("text-danger");
+    } else if (strength == 2 || strength == 3) {
+      bar.classList.add("medium");
+      strengthText.textContent = "Medium: Could be improved with more variety.";
+      strengthText.classList.add("text-warning");
+    } else if (strength >= 4) {
+      bar.classList.add("strong");
+      strengthText.textContent = "Strong: Good password!";
+      strengthText.classList.add("text-success");
+    }
+  });
+
+  function togglePassword() {
+    password.type = password.type === "password" ? "text" : "password";
+  }
+
+  function sanitizeEmail() {
+    const emailInput = document.getElementById("email");
+    emailInput.value = emailInput.value.replace(/\s/g, "");
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

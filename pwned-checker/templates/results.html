@@ -1,0 +1,82 @@
+<!-- templates/results.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Breach Results</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- ✅ Chart.js loaded here -->
+</head>
+<body class="bg-light">
+  <div class="container py-5">
+    <div class="text-center mb-4">
+      <h1 class="display-5">Breach Results</h1>
+      <p class="text-muted">for <strong>{{ email }}</strong></p>
+    </div>
+
+    {% if breaches %}
+      <div class="alert alert-danger text-center" role="alert">
+        <strong>{{ breaches|length }}</strong> breaches found!
+      </div>
+
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for breach in breaches %}
+          <div class="col">
+            <div class="card shadow-sm h-100">
+              <div class="card-body">
+                <h5 class="card-title text-danger">{{ breach.Name }}</h5>
+                <p class="card-text">
+                  <strong>Domain:</strong> {{ breach.Domain }}<br>
+                  <strong>Date:</strong> {{ breach.BreachDate }}<br>
+                  <strong>Compromised Data:</strong> {{ breach.DataClasses | join(', ') }}
+                </p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-success text-center" role="alert">
+        No breaches found! 🎉
+      </div>
+    {% endif %}
+
+    {% if labels and data %}
+      <div class="mt-5">
+        <h3 class="text-center">📊 Most Common Breach Sources (All Users)</h3>
+        <canvas id="breachChart" height="100"></canvas>
+      </div>
+
+      <script>
+        const ctx = document.getElementById('breachChart').getContext('2d');
+        const breachChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: {{ labels|tojson }},
+            datasets: [{
+              label: '# of Reports',
+              data: {{ data|tojson }},
+              backgroundColor: 'rgba(255, 99, 132, 0.6)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      </script>
+    {% endif %}
+
+    <div class="text-center mt-5">
+      <a href="{{ url_for('check_email') }}" class="btn btn-outline-primary">🔁 Check Another Email</a>
+      <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">🏠 Home</a>
+    </div>
+  </div>
+</body>
+</html>

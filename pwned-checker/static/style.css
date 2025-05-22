@@ -76,3 +76,11 @@ input, button {
 .actions .button:hover {
   background-color: #0056b3;
 }
+a {
+  color: white;             /* Sets default link color */
+  text-decoration: none;    /* Removes underline if you don't want it */
+}
+
+a:visited {
+  color: white;             /* Prevents purple visited links */
+}

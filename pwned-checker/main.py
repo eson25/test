@@ -3,14 +3,20 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
 import requests
+from models import db, User, BreachLog
+from collections import Counter
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+db.init_app(app)  
+
+with app.app_context():
+    db.create_all()
 
 API_KEY = "20e80cfdaea7408f9a04ecff835f233a"
 HIBP_URL = "https://haveibeenpwned.com/api/v3/breachedaccount/"
@@ -29,9 +35,43 @@ def load_user(user_id):
 def check_password():
     return "<h2>Password check tool coming soon!</h2><a href='/'>Back</a>"
 
-@app.route('/check-email')
+@app.route('/check-email', methods=['GET', 'POST'])
+@login_required
 def check_email():
-    return redirect(url_for('dashboard'))  # or a separate route if you prefer
+    if request.method == 'POST':
+        email = request.form['email']
+        headers = {
+            "hibp-api-key": API_KEY,
+            "User-Agent": "PwnedCheckerApp"
+        }
+        url = f"https://haveibeenpwned.com/api/v3/breachedaccount/{email}?truncateResponse=false"
+
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            breaches = response.json()
+            for breach in breaches:
+                log = BreachLog(user_email=email, source=breach['Name'])
+                db.session.add(log)
+            db.session.commit()
+            # Aggregate data
+            all_logs = BreachLog.query.all()
+            sources = [entry.source for entry in all_logs]
+            counts = Counter(sources)
+            labels = list(counts.keys())
+            data = list(counts.values())
+            return render_template('results.html', email=email, breaches=breaches)
+        
+        
+        elif response.status_code == 404:
+            return render_template('results.html', email=email, breaches=[])
+        
+        else:
+            flash("Error checking email", "danger")
+            return redirect(url_for('check_email'))
+
+    return render_template('check_email.html')
+
+
 
 @app.route('/')
 def home():
@@ -51,7 +91,7 @@ def register():
         db.session.commit()
         flash("Registered successfully", "success")
         return redirect(url_for('login'))
-    return render_template('register.html')
+    return render_template('register.html', show_navbar=False)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -62,7 +102,7 @@ def login():
             login_user(user)
             return redirect(url_for('home'))
         flash("Invalid credentials", "danger")
-    return render_template('login.html')
+    return render_template('login.html', show_navbar=False)
 
 @app.route('/logout')
 @login_required
@@ -88,6 +128,20 @@ def dashboard():
         else:
             flash("Error contacting API.", "danger")
     return render_template('dashboard.html', breaches=breaches)
+
+@app.route('/breach-graph')
+def breach_graph():
+    from models import BreachLog
+    from collections import Counter
+
+    breaches = BreachLog.query.all()
+    sources = [b.source for b in breaches]
+    counts = Counter(sources)
+
+    labels = list(counts.keys())
+    data = list(counts.values())
+
+    return render_template("breach_graph.html", labels=labels, data=data)
     
 if __name__ == '__main__':
     with app.app_context():
