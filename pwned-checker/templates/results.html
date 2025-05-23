@@ -64,6 +64,40 @@
       {% endif %}
     {% endif %}
 
+    <!-- Timeline -->
+    {% if timeline_labels and timeline_data %}
+    <div class="mt-5">
+      <h3 class="text-center">📆 Breach Reports Over Time</h3>
+      <canvas id="timelineChart" height="100"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+    const timelineChart = new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            labels: {{ timeline_labels | tojson }},
+            datasets: [{
+                label: 'Number of Reports',
+                data: {{ timeline_data | tojson }},
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+    </script>
+    {% endif %}
+
+    <!-- Common breach sources -->
     {% if labels and data %}
       <div class="mt-5">
         <h3 class="text-center">📊 Most Common Breach Sources (All Users)</h3>
@@ -94,7 +128,49 @@
         });
       </script>
     {% endif %}
+    <!-- Security reconmmendations -->
+    <div class="mt-5">
+      <h3 class="text-center">📆 Live Breach Timeline (Last 2 Years)</h3>
+      <canvas id="liveTimelineChart" height="100"></canvas>
+    </div>
 
+    <script>
+      const ctxLive = document.getElementById('liveTimelineChart').getContext('2d');
+      const liveChart = new Chart(ctxLive, {
+        type: 'line',
+        data: { labels: [], datasets: [{
+          label: 'Reports per Month',
+          data: [],
+          borderColor: 'rgba(255,159,64,1)',
+          backgroundColor: 'rgba(255,159,64,0.2)',
+          fill: true,
+          tension: 0.4
+        }]},
+        options: {
+          responsive: true,
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      async function refreshTimeline() {
+        try {
+          const res = await fetch("{{ url_for('api_breach_timeline') }}");
+          const json = await res.json();
+          liveChart.data.labels = json.labels;
+          liveChart.data.datasets[0].data = json.data;
+          liveChart.update();
+        } catch(e) {
+          console.error("Failed to update timeline:", e);
+        }
+      }
+
+      // Initial load
+      refreshTimeline();
+      // Refresh every 60 seconds
+      setInterval(refreshTimeline, 60000);
+    </script>
+
+    <!-- Security reconmmendations -->
     {% if advice %}
       <div class="mt-5">
         <h3>🛡️ Your Security Recommendations</h3>

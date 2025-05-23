@@ -1,10 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
 import requests
 from models import db, User, BreachLog
 from collections import Counter
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev'
@@ -73,7 +76,7 @@ def check_email():
                 BreachLog.user_email, BreachLog.source
             ).distinct().all()
 
-            # Count each source only once per unique email
+            # Counts each source only once per email
             source_counts = {}
             for email, source in unique_logs:
                 source_counts[source] = source_counts.get(source, 0) + 1
@@ -81,6 +84,13 @@ def check_email():
             labels = list(source_counts.keys())
             data = list(source_counts.values())
 
+            all_logs = BreachLog.query.all()
+            months = [log.timestamp.strftime("%Y-%m") for log in all_logs if log.timestamp]
+            month_counts = Counter(months)
+            timeline_labels = sorted(month_counts.keys())
+            timeline_data = [month_counts[m] for m in timeline_labels]
+
+            #Advice stuff
             all_data_classes = set()
             for breach in breaches:
                 all_data_classes.update(breach.get("DataClasses", []))
@@ -102,7 +112,7 @@ def check_email():
                 if not advice:
                     advice.append("✅ No sensitive data types were found. Still, stay safe and monitor your accounts.")
 
-            return render_template('results.html', email=email, breaches=breaches, labels=labels, data=data, advice=advice)
+            return render_template('results.html', email=email, breaches=breaches, labels=labels, data=data, advice=advice, timeline_labels=timeline_labels,timeline_data=timeline_data)
         
         
         elif response.status_code == 404:
@@ -189,3 +199,22 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True, host="0.0.0.0")
+
+@app.route('/api/breach-timeline')
+@login_required
+def api_breach_timeline():
+    # Only logs from the last 2 years
+    cutoff = datetime.utcnow() - relativedelta(years=2)
+    logs = BreachLog.query.filter(BreachLog.timestamp >= cutoff).all()
+
+    # Group by month ("YYYY-MM")
+    months = [log.timestamp.strftime("%Y-%m") for log in logs]
+    counts = {}
+    for m in months:
+        counts[m] = counts.get(m, 0) + 1
+
+    # Sort chronologically
+    labels = sorted(counts.keys())
+    data = [counts[m] for m in labels]
+
+    return jsonify(labels=labels, data=data)
