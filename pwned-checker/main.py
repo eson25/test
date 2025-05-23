@@ -52,11 +52,11 @@ def check_email():
             counts = Counter(sources)
             labels = list(counts.keys())
             data = list(counts.values())
-            return render_template('results.html', email=email, breaches=breaches)
+            return render_template('results.html', email=email, breaches=breaches, labels=labels, data=data)
         
         
         elif response.status_code == 404:
-            return render_template('results.html', email=email, breaches=[])
+            return render_template('results.html', email=email, breaches=[], labels=[], data=[])
         
         else:
             flash("Error checking email", "danger")
