@@ -25,22 +25,26 @@
           <strong>{{ breaches|length }}</strong> breaches found!
         </div>
 
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-          {% for breach in breaches %}
-            <div class="col">
-              <div class="card shadow-sm h-100">
-                <div class="card-body">
-                  <h5 class="card-title text-danger">{{ breach.Name }}</h5>
-                  <p class="card-text">
-                    <strong>Domain:</strong> {{ breach.Domain }}<br>
-                    <strong>Date:</strong> {{ breach.BreachDate }}<br>
-                    <strong>Compromised Data:</strong> {{ breach.DataClasses | join(', ') }}
-                  </p>
-                </div>
+      <div class="accordion" id="breachAccordion">
+        {% for breach in breaches %}
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{ loop.index }}">
+              <button class="accordion-button collapsed text-danger" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="collapse{{ loop.index }}">
+                {{ breach.Name }}
+              </button>
+            </h2>
+            <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#breachAccordion">
+              <div class="accordion-body">
+                <strong>Domain:</strong> {{ breach.Domain }}<br>
+                <strong>Date:</strong> {{ breach.BreachDate }}<br>
+                <strong>Compromised Data:</strong> {{ breach.DataClasses | join(', ') }}<br><br>
+                <strong>Description:</strong><br> {{ breach.Description | striptags }}
               </div>
             </div>
-          {% endfor %}
-        </div>
+          </div>
+        {% endfor %}
+      </div>
+
       {% else %}
         <div class="alert alert-success text-center" role="alert">
           No breaches found! 🎉
@@ -89,7 +93,6 @@
           }
         });
       </script>
-
     {% endif %}
 
     {% if advice %}

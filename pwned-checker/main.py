@@ -88,11 +88,11 @@ def check_email():
                 advice = []
 
                 if "Passwords" in all_data_classes:
-                    advice.append("🔒 Change your password immediately and avoid reusing passwords across sites.")
+                    advice.append("🔒 Change your password immediately and avoid reusing passwords across sites, install a password manager such as bitwarden.")
                 if "Email addresses" in all_data_classes:
-                    advice.append("📬 Be cautious of phishing emails pretending to be from trusted services.")
+                    advice.append("📬 Be cautious of phishing emails pretending to be from trusted services double check links before clicking.")
                 if "Phone numbers" in all_data_classes:
-                    advice.append("📱 Be wary of scam calls or messages. Consider enabling spam filtering.")
+                    advice.append("📱 Be wary of scam calls or messages. Consider enabling spam filtering on your device.")
                 if "Usernames" in all_data_classes:
                     advice.append("👤 Avoid using the same username-password combo across websites.")
                 if "Physical addresses" in all_data_classes:
