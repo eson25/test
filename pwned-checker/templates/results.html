@@ -47,15 +47,16 @@
         <canvas id="breachChart" height="100"></canvas>
       </div>
 
+      <canvas id="breachChart" height="100"></canvas>
       <script>
         const ctx = document.getElementById('breachChart').getContext('2d');
         const breachChart = new Chart(ctx, {
           type: 'bar',
           data: {
-            labels: {{ labels|tojson }},
+            labels: {{ labels | tojson }},
             datasets: [{
               label: '# of Reports',
-              data: {{ data|tojson }},
+              data: {{ data | tojson }},
               backgroundColor: 'rgba(255, 99, 132, 0.6)',
               borderColor: 'rgba(255, 99, 132, 1)',
               borderWidth: 1
@@ -64,13 +65,12 @@
           options: {
             responsive: true,
             scales: {
-              y: {
-                beginAtZero: true
-              }
+              y: { beginAtZero: true }
             }
           }
         });
       </script>
+
     {% endif %}
 
     {% if advice %}

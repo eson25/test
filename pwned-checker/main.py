@@ -25,8 +25,31 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 @app.route('/check-password')
+@login_required
 def check_password():
-    return "<h2>Password check tool coming soon!</h2><a href='/'>Back</a>"
+    breached = None
+    count = 0
+
+    if request.method == 'POST':
+        password = request.form['password']
+        sha1_password = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
+        prefix = sha1_password[:5]
+        suffix = sha1_password[5:]
+
+        response = requests.get(f'https://api.pwnedpasswords.com/range/{prefix}')
+        if response.status_code == 200:
+            hashes = (line.split(':') for line in response.text.splitlines())
+            for hash_suffix, breach_count in hashes:
+                if hash_suffix == suffix:
+                    breached = True
+                    count = int(breach_count)
+                    break
+            else:
+                breached = False
+        else:
+            flash("Error checking password", "danger")
+
+    return render_template('check_password.html', breached=breached, count=count)
 
 @app.route('/check-email', methods=['GET', 'POST'])
 @login_required
@@ -46,18 +69,16 @@ def check_email():
                 log = BreachLog(user_email=email, source=breach['Name'])
                 db.session.add(log)
             db.session.commit()
-            # Aggregate data
+            # Retrieve unique combinations of user_email and source
             unique_logs = db.session.query(
                 BreachLog.user_email, BreachLog.source
             ).distinct().all()
 
-            # Now tally sources only once per unique email
-            sources_counts = {}
+            # Count each source only once per unique email
+            source_counts = {}
             for email, source in unique_logs:
-                sources_counts[source] = sources_counts.get(source, 0) + 1
+                source_counts[source] = source_counts.get(source, 0) + 1
 
-            labels = list(sources_seen.keys())
-            data = list(sources_seen.values())
             labels = list(source_counts.keys())
             data = list(source_counts.values())
 
