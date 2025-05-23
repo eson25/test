@@ -112,7 +112,7 @@ def check_email():
                 if not advice:
                     advice.append("✅ No sensitive data types were found. Still, stay safe and monitor your accounts.")
 
-            return render_template('results.html', email=email, breaches=breaches, labels=labels, data=data, advice=advice, timeline_labels=timeline_labels,timeline_data=timeline_data)
+            return render_template('results.html', email=email, breaches=breaches, labels=labels, data=data, advice=advice, timeline_labels=timeline_labels, timeline_data=timeline_data)
         
         
         elif response.status_code == 404:
