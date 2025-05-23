@@ -105,7 +105,11 @@
 
 
     <div class="text-center mt-5">
-      <a href="{{ url_for('check_email') }}" class="btn btn-outline-primary">🔁 Check Another Email</a>
+      {% if password %}
+        <a href="{{ url_for('check_password') }}" class="btn btn-outline-warning">🔁 Check Another Password</a>
+      {% else %}
+        <a href="{{ url_for('check_email') }}" class="btn btn-outline-primary">🔁 Check Another Email</a>
+      {% endif %}
       <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">🏠 Home</a>
     </div>
   </div>
