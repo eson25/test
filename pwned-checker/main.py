@@ -24,32 +24,31 @@ HIBP_URL = "https://haveibeenpwned.com/api/v3/breachedaccount/"
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.route('/check-password')
+@app.route('/check-password', methods=['GET', 'POST'])
 @login_required
 def check_password():
-    breached = None
-    count = 0
-
     if request.method == 'POST':
         password = request.form['password']
+
+        # Simple HIBP password check
+        import hashlib
         sha1_password = hashlib.sha1(password.encode('utf-8')).hexdigest().upper()
         prefix = sha1_password[:5]
         suffix = sha1_password[5:]
+        url = f"https://api.pwnedpasswords.com/range/{prefix}"
+        res = requests.get(url)
 
-        response = requests.get(f'https://api.pwnedpasswords.com/range/{prefix}')
-        if response.status_code == 200:
-            hashes = (line.split(':') for line in response.text.splitlines())
-            for hash_suffix, breach_count in hashes:
+        pwned_count = 0
+        if res.status_code == 200:
+            hashes = (line.split(':') for line in res.text.splitlines())
+            for hash_suffix, count in hashes:
                 if hash_suffix == suffix:
-                    breached = True
-                    count = int(breach_count)
+                    pwned_count = int(count)
                     break
-            else:
-                breached = False
-        else:
-            flash("Error checking password", "danger")
 
-    return render_template('check_password.html', breached=breached, count=count)
+        return render_template('results.html', password=password, pwned_count=pwned_count)
+
+    return render_template('check_password.html')
 
 @app.route('/check-email', methods=['GET', 'POST'])
 @login_required

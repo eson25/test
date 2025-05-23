@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <!-- templates/results.html -->
 <!DOCTYPE html>
 <html lang="en">
@@ -11,34 +14,50 @@
   <div class="container py-5">
     <div class="text-center mb-4">
       <h1 class="display-5">Breach Results</h1>
-      <p class="text-muted">for <strong>{{ email }}</strong></p>
+      {% if email %}
+        <p class="text-muted">for <strong>{{ email }}</strong></p>
+      {% endif %}
     </div>
 
-    {% if breaches %}
-      <div class="alert alert-danger text-center" role="alert">
-        <strong>{{ breaches|length }}</strong> breaches found!
-      </div>
+    {% if email %}
+      {% if breaches %}
+        <div class="alert alert-danger text-center" role="alert">
+          <strong>{{ breaches|length }}</strong> breaches found!
+        </div>
 
-      <div class="row row-cols-1 row-cols-md-2 g-4">
-        {% for breach in breaches %}
-          <div class="col">
-            <div class="card shadow-sm h-100">
-              <div class="card-body">
-                <h5 class="card-title text-danger">{{ breach.Name }}</h5>
-                <p class="card-text">
-                  <strong>Domain:</strong> {{ breach.Domain }}<br>
-                  <strong>Date:</strong> {{ breach.BreachDate }}<br>
-                  <strong>Compromised Data:</strong> {{ breach.DataClasses | join(', ') }}
-                </p>
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+          {% for breach in breaches %}
+            <div class="col">
+              <div class="card shadow-sm h-100">
+                <div class="card-body">
+                  <h5 class="card-title text-danger">{{ breach.Name }}</h5>
+                  <p class="card-text">
+                    <strong>Domain:</strong> {{ breach.Domain }}<br>
+                    <strong>Date:</strong> {{ breach.BreachDate }}<br>
+                    <strong>Compromised Data:</strong> {{ breach.DataClasses | join(', ') }}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-success text-center" role="alert">
+          No breaches found! 🎉
+        </div>
+      {% endif %}
+    {% endif %}  
+
+    {% if password %}
+      <div class="alert alert-{{ 'danger' if pwned_count > 0 else 'success' }} text-center">
+        <strong>Your password was {{ 'found' if pwned_count > 0 else 'not found' }} in {{ pwned_count }} breach{{ '' if pwned_count == 1 else 'es' }}.</strong>
       </div>
-    {% else %}
-      <div class="alert alert-success text-center" role="alert">
-        No breaches found! 🎉
-      </div>
+
+      {% if pwned_count > 0 %}
+        <div class="alert alert-warning text-center mt-3">
+        ⚠️ <strong>Change your password immediately!</strong> Avoid reusing passwords across sites, and consider using a password manager.
+        </div>
+      {% endif %}
     {% endif %}
 
     {% if labels and data %}
@@ -92,3 +111,4 @@
   </div>
 </body>
 </html>
+{% endblock %}

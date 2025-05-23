@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="text-center mt-5">
+  <h1 class="display-4 mb-3">🔍 Welcome to Pwned Checker</h1>
+  <p class="lead mb-4">Find out if your email or passwords have been involved in a data breach.</p>
 
-
-<div class="hero">
-  <h1>🔍 Pwned Checker</h1>
-  <p>Check if your data has been compromised in a breach.</p>
-
-  <div class="actions">
-    <a href="{{ url_for('check_email') }}" class="button">📧 Check Email</a>
-    <a href="{{ url_for('check_password') }}" class="button">🔐 Check Password</a>
-    <a href="{{ url_for('breach_graph') }}" class="nav-link">Graph</a>
+  <div class="d-flex justify-content-center flex-wrap gap-3">
+    <a href="{{ url_for('check_email') }}" class="btn btn-lg btn-danger px-4 py-2 rounded-pill shadow">
+      📧 Check Email
+    </a>
+    <a href="{{ url_for('check_password') }}" class="btn btn-lg btn-warning px-4 py-2 rounded-pill shadow">
+      🔐 Check Password
+    </a>
   </div>
 </div>
 {% endblock %}
