@@ -73,6 +73,18 @@
       </script>
     {% endif %}
 
+    {% if advice %}
+      <div class="mt-5">
+        <h3>🛡️ Your Security Recommendations</h3>
+        <ul class="list-group">
+          {% for tip in advice %}
+            <li class="list-group-item">{{ tip }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+
     <div class="text-center mt-5">
       <a href="{{ url_for('check_email') }}" class="btn btn-outline-primary">🔁 Check Another Email</a>
       <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">🏠 Home</a>

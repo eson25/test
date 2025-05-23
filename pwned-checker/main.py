@@ -47,12 +47,42 @@ def check_email():
                 db.session.add(log)
             db.session.commit()
             # Aggregate data
-            all_logs = BreachLog.query.all()
-            sources = [entry.source for entry in all_logs]
-            counts = Counter(sources)
-            labels = list(counts.keys())
-            data = list(counts.values())
-            return render_template('results.html', email=email, breaches=breaches, labels=labels, data=data)
+            unique_logs = db.session.query(
+                BreachLog.user_email, BreachLog.source
+            ).distinct().all()
+
+            # Now tally sources only once per unique email
+            sources_counts = {}
+            for email, source in unique_logs:
+                sources_counts[source] = sources_counts.get(source, 0) + 1
+
+            labels = list(sources_seen.keys())
+            data = list(sources_seen.values())
+            labels = list(source_counts.keys())
+            data = list(source_counts.values())
+
+            all_data_classes = set()
+            for breach in breaches:
+                all_data_classes.update(breach.get("DataClasses", []))
+
+                advice = []
+
+                if "Passwords" in all_data_classes:
+                    advice.append("🔒 Change your password immediately and avoid reusing passwords across sites.")
+                if "Email addresses" in all_data_classes:
+                    advice.append("📬 Be cautious of phishing emails pretending to be from trusted services.")
+                if "Phone numbers" in all_data_classes:
+                    advice.append("📱 Be wary of scam calls or messages. Consider enabling spam filtering.")
+                if "Usernames" in all_data_classes:
+                    advice.append("👤 Avoid using the same username-password combo across websites.")
+                if "Physical addresses" in all_data_classes:
+                    advice.append("🏠 Monitor for suspicious physical mail or packages.")
+                if "IP addresses" in all_data_classes:
+                    advice.append("🌐 Consider using a VPN when browsing to obscure your location.")
+                if not advice:
+                    advice.append("✅ No sensitive data types were found. Still, stay safe and monitor your accounts.")
+
+            return render_template('results.html', email=email, breaches=breaches, labels=labels, data=data, advice=advice)
         
         
         elif response.status_code == 404:
@@ -129,7 +159,6 @@ def breach_graph():
 
     breaches = BreachLog.query.all()
     sources = [b.source for b in breaches]
-    counts = Counter(sources)
 
     labels = list(counts.keys())
     data = list(counts.values())
