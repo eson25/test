@@ -199,22 +199,3 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True, host="0.0.0.0")
-
-@app.route('/api/breach-timeline')
-@login_required
-def api_breach_timeline():
-    # Only logs from the last 2 years
-    cutoff = datetime.utcnow() - relativedelta(years=2)
-    logs = BreachLog.query.filter(BreachLog.timestamp >= cutoff).all()
-
-    # Group by month ("YYYY-MM")
-    months = [log.timestamp.strftime("%Y-%m") for log in logs]
-    counts = {}
-    for m in months:
-        counts[m] = counts.get(m, 0) + 1
-
-    # Sort chronologically
-    labels = sorted(counts.keys())
-    data = [counts[m] for m in labels]
-
-    return jsonify(labels=labels, data=data)

@@ -133,43 +133,7 @@
       <h3 class="text-center">📆 Live Breach Timeline (Last 2 Years)</h3>
       <canvas id="liveTimelineChart" height="100"></canvas>
     </div>
-
-    <script>
-      const ctxLive = document.getElementById('liveTimelineChart').getContext('2d');
-      const liveChart = new Chart(ctxLive, {
-        type: 'line',
-        data: { labels: [], datasets: [{
-          label: 'Reports per Month',
-          data: [],
-          borderColor: 'rgba(255,159,64,1)',
-          backgroundColor: 'rgba(255,159,64,0.2)',
-          fill: true,
-          tension: 0.4
-        }]},
-        options: {
-          responsive: true,
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-
-      async function refreshTimeline() {
-        try {
-          const res = await fetch("{{ url_for('api_breach_timeline') }}");
-          const json = await res.json();
-          liveChart.data.labels = json.labels;
-          liveChart.data.datasets[0].data = json.data;
-          liveChart.update();
-        } catch(e) {
-          console.error("Failed to update timeline:", e);
-        }
-      }
-
-      // Initial load
-      refreshTimeline();
-      // Refresh every 60 seconds
-      setInterval(refreshTimeline, 60000);
-    </script>
-
+    
     <!-- Security reconmmendations -->
     {% if advice %}
       <div class="mt-5">
